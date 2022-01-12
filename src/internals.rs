@@ -20,11 +20,11 @@ fn shell_quote(value: &str) -> String {
 
 // https://wiki.bash-hackers.org/syntax/quoting#ansi_c_like_strings
 fn bash_binary_quote(value: &[u8]) -> String {
-    let mut r = Vec::new();
-    r.extend(b"$'".iter());
-    r.extend(value.iter().flat_map(|&c| std::ascii::escape_default(c)));
-    r.extend(b"'".iter());
-    String::from_utf8(r).expect("bash_binary quote should have output utf8")
+    let value = value
+        .iter()
+        .flat_map(|&c| std::ascii::escape_default(c))
+        .flat_map(|c| char::from_u32(c as u32));
+    "$'".chars().chain(value).chain("'".chars()).collect()
 }
 
 impl fmt::Display for CommandArg {
@@ -196,4 +196,21 @@ pub fn execute(mut cmd: Command) -> Result<(), std::io::Error> {
         ));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn quote() {
+        let strs = [("$''", ""), ("$'foo bar'", "foo bar"), (r"$'\\n'", r"\n")];
+        for (k, v) in strs.iter() {
+            assert_eq!(*k, bash_binary_quote(v.as_bytes()));
+        }
+        let bins = [(r"$'foo\x07bar'", b"foo\x07bar")];
+        for (k, v) in bins.iter() {
+            assert_eq!(*k, bash_binary_quote(*v));
+        }
+    }
 }
