@@ -1,8 +1,6 @@
 use std::fmt;
-use std::os::unix::io::AsRawFd;
-use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 /// A parsed argument that will be provided to a `Command` object.
 /// An implementation detail of the macros.
@@ -159,22 +157,14 @@ where
 
 fn impl_render(script: &str, args: String) -> Result<Command, std::io::Error> {
     use std::io::Seek;
+    use std::io::SeekFrom;
     use std::io::Write;
     let mut c = Command::new("bash");
     let mut tmpf = tempfile::tempfile()?;
     tmpf.write_all(args.as_bytes())?;
     tmpf.write_all(script.as_bytes())?;
-    // SAFETY: We're just making the tempfile descriptor stdin for bash
-    unsafe {
-        c.pre_exec(move || {
-            tmpf.seek(std::io::SeekFrom::Start(0))?;
-            let fd = tmpf.as_raw_fd();
-            nix::unistd::dup2(fd, 0).map_err(|e| {
-                std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to dup2: {}", e))
-            })?;
-            Ok(())
-        });
-    }
+    tmpf.seek(SeekFrom::Start(0))?;
+    c.stdin(Stdio::from(tmpf));
     Ok(c)
 }
 
