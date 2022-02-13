@@ -146,15 +146,6 @@ where
     }
 }
 
-/// Create a [`CommandArg`]; implementation detail of the macros.
-#[doc(hidden)]
-pub fn command_arg<'a, T>(value: &'a T) -> CommandArg
-where
-    CommandArg: std::convert::From<&'a T>,
-{
-    CommandArg::from(value)
-}
-
 fn impl_render(script: &str, args: String) -> Result<Command, std::io::Error> {
     use std::io::Seek;
     use std::io::SeekFrom;

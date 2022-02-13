@@ -61,7 +61,7 @@ macro_rules! bash_command {
             use std::fmt::Write;
             let mut script: String = "set -euo pipefail\n".into();
             $(
-                write!(&mut script, "{}={}\n", stringify!($id), $crate::internals::command_arg(&$id)).unwrap();
+                write!(&mut script, "{}={}\n", stringify!($id), sh_inline::internals::CommandArg::from(&$id)).unwrap();
             )*
             $crate::internals::render(&$s, script)
         }
