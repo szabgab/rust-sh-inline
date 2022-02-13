@@ -32,6 +32,11 @@
 #[doc(hidden)]
 pub mod internals;
 
+#[cfg(feature = "cap-std-ext")]
+pub use cap_std_ext;
+#[cfg(feature = "cap-std-ext")]
+pub use cap_std_ext::cap_std;
+
 /// Create a [`Command`] object that will execute a fragment of (Bash) shell script
 /// in "strict mode", i.e. with `set -euo pipefail`.  The first argument is the
 /// script, and additional arguments should be Rust variable identifiers.  The
@@ -61,7 +66,7 @@ macro_rules! bash_command {
             use std::fmt::Write;
             let mut script: String = "set -euo pipefail\n".into();
             $(
-                write!(&mut script, "{}={}\n", stringify!($id), sh_inline::internals::CommandArg::from(&$id)).unwrap();
+                write!(&mut script, "{}={}\n", stringify!($id), $crate::internals::CommandArg::from(&$id)).unwrap();
             )*
             $crate::internals::render(&$s, script)
         }
@@ -87,6 +92,32 @@ macro_rules! bash_command {
 macro_rules! bash {
     ($s:expr) => { $crate::bash!($s,) };
     ($s:expr, $( $id:ident ),*) => {
-        $crate::internals::execute($crate::bash_command!($s, $( $id ),*).expect("failed to create temporary script"))
+        $crate::internals::execute($crate::bash_command!($s, $( $id ),*).expect("failed to create temporary script")
+    )
+    };
+}
+
+/// Execute a fragment of Bash shell script with the specified working directory.
+///
+/// Otherwise this is equivalent to the [`bash`] macro.
+///
+/// ```
+/// use sh_inline::*;
+/// use std::sync::Arc;
+/// let td = Arc::new(cap_tempfile::tempdir(cap_std::ambient_authority())?);
+/// td.write("sometestfile", "test file contents")?;
+/// bash_in!(td, r#"grep -qF "test file contents" sometestfile"#)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[macro_export]
+#[cfg(feature = "cap-std-ext")]
+macro_rules! bash_in {
+    ($cwd:expr, $s:expr) => { $crate::bash_in!($cwd, $s,) };
+    ($cwd:expr, $s:expr, $( $id:ident ),*) => {
+        { use cap_std_ext::cmdext::CapStdExtCommandExt;
+            let mut cmd = $crate::bash_command!($s, $( $id ),*).expect("failed to create temporary script");
+            cmd.cwd_dir($cwd);
+            $crate::internals::execute(cmd)
+    }
     };
 }

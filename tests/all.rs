@@ -1,4 +1,6 @@
 extern crate sh_inline;
+#[cfg(feature = "cap-std-ext")]
+use cap_std_ext::cap_std;
 use sh_inline::{bash, bash_command};
 use std::ffi::OsStr;
 use std::os::unix::ffi::OsStrExt;
@@ -74,4 +76,14 @@ fn sh_path() {
 fn sh_path_binary() {
     let p = Path::new(OsStr::from_bytes(&[0x21, 0, 0xFF, 0x22, 0x61]));
     bash!(r#"test ${p} = $'!\x00\xFF\"a'"#, p).unwrap();
+}
+
+#[test]
+#[cfg(feature = "cap-std-ext")]
+fn bash_in() -> anyhow::Result<()> {
+    use std::sync::Arc;
+    let td = Arc::new(cap_tempfile::tempdir(cap_std::ambient_authority())?);
+    td.write("somefile", "hello world")?;
+    sh_inline::bash_in!(td, "ls -al somefile >/dev/null").unwrap();
+    Ok(())
 }

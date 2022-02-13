@@ -9,7 +9,13 @@ documentation = "http://docs.rs/sh-inline"
 homepage = "http://github.com/cgwalters/rust-sh-inline"
 keywords = ["subprocess", "macro", "shell"]
 readme = "README.md"
+edition = "2018"
 
 [dependencies]
 shlex = "0.1.1"
 tempfile = "3.1.0"
+cap-std-ext = { version = "0.24", optional = true}
+
+[dev-dependencies]
+anyhow = "1.0"
+cap-tempfile = "0.24"
