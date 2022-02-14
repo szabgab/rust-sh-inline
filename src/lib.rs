@@ -54,6 +54,8 @@ pub use cap_std_ext::cap_std;
 /// let d: String = "baz".into();
 /// let r = bash_command!(r#"test "${a} ${b} ${c}" = "foo bar 42""#, a, b, c).expect("creating script").status()?;
 /// assert!(r.success());
+/// let r = bash_command!(r#"test "${a}" = "2""#, a = 1 + 1).expect("creating script").status()?;
+/// assert!(r.success());
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
@@ -61,16 +63,17 @@ pub use cap_std_ext::cap_std;
 #[macro_export]
 macro_rules! bash_command {
     ($s:expr) => { $crate::bash_command!($s,) };
-    ($s:expr, $( $id:ident ),*) => {
+    ($s:expr, $( $id:ident = $v:expr),*) => {
         {
             use std::fmt::Write;
             let mut script: String = "set -euo pipefail\n".into();
             $(
-                write!(&mut script, "{}={}\n", stringify!($id), $crate::internals::CommandArg::from(&$id)).unwrap();
+                write!(&mut script, "{}={}\n", stringify!($id), $crate::internals::CommandArg::from(&$v)).unwrap();
             )*
             $crate::internals::render(&$s, script)
         }
     };
+    ($s:expr, $( $id:ident ),*) => { $crate::bash_command!($s, $($id = $id),*) };
 }
 
 /// Execute a fragment of Bash shell script, returning an error if the subprocess exits unsuccessfully.
@@ -83,14 +86,16 @@ macro_rules! bash_command {
 /// use sh_inline::*;
 /// let a = "foo";
 /// let b = std::path::Path::new("bar");
-/// let c = 42;
-/// let d: String = "baz".into();
-/// bash!(r#"test "${a} ${b} ${c}" = "foo bar 42""#, a, b, c)?;
+/// bash!(r#"test "${a} ${b} ${c}" = "foo bar 42""#, a = a, b = b, c = 42)?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[macro_export]
 macro_rules! bash {
     ($s:expr) => { $crate::bash!($s,) };
+    ($s:expr, $( $id:ident = $v:expr ),*) => {
+        $crate::internals::execute($crate::bash_command!($s, $( $id = $v ),*).expect("failed to create temporary script")
+    )
+    };
     ($s:expr, $( $id:ident ),*) => {
         $crate::internals::execute($crate::bash_command!($s, $( $id ),*).expect("failed to create temporary script")
     )
@@ -113,11 +118,12 @@ macro_rules! bash {
 #[cfg(feature = "cap-std-ext")]
 macro_rules! bash_in {
     ($cwd:expr, $s:expr) => { $crate::bash_in!($cwd, $s,) };
-    ($cwd:expr, $s:expr, $( $id:ident ),*) => {
+    ($cwd:expr, $s:expr, $( $id:ident = $v:expr ),*) => {
         { use cap_std_ext::cmdext::CapStdExtCommandExt;
-            let mut cmd = $crate::bash_command!($s, $( $id ),*).expect("failed to create temporary script");
+            let mut cmd = $crate::bash_command!($s, $( $id = $v ),*).expect("failed to create temporary script");
             cmd.cwd_dir($cwd);
             $crate::internals::execute(cmd)
     }
     };
+    ($cwd: expr, $s:expr, $( $id:ident ),*) => { $crate::bash_in!($cwd, $s, $($id = $id),*) };
 }
