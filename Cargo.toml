@@ -19,3 +19,6 @@ cap-std-ext = { version = "0.24.2", optional = true}
 [dev-dependencies]
 anyhow = "1.0"
 cap-tempfile = "0.24"
+
+[package.metadata.docs.rs]
+all-features = true
