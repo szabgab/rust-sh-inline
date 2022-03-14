@@ -28,6 +28,13 @@
 //! foo="variable with spaces"
 //! test ${foo} = 'variable with spaces'
 //! ```
+//!
+//! # Related crates
+//!
+//! [`xshell`] is a crate that does not depend on bash, and also supports
+//! inline formatting.
+//!
+//! [`xshell`]: https://docs.rs/xshell/latest/xshell/
 
 #[doc(hidden)]
 pub mod internals;
