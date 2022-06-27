@@ -128,7 +128,7 @@ macro_rules! bash_in {
     ($cwd:expr, $s:expr, $( $id:ident = $v:expr ),*) => {
         { use cap_std_ext::cmdext::CapStdExtCommandExt;
             let mut cmd = $crate::bash_command!($s, $( $id = $v ),*).expect("failed to create temporary script");
-            cmd.cwd_dir_owned($cwd.try_clone().expect("cloning dir"));
+            cmd.cwd_dir($cwd.try_clone().expect("cloning dir"));
             $crate::internals::execute(cmd)
     }
     };
