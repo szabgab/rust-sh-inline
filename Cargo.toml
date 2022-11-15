@@ -4,7 +4,7 @@ description = "Macros to run inline shell (bash) script"
 license = "MIT OR Apache-2.0"
 name = "sh-inline"
 repository = "http://github.com/cgwalters/rust-sh-inline"
-version = "0.3.0"
+version = "0.4.0"
 documentation = "http://docs.rs/sh-inline"
 homepage = "http://github.com/cgwalters/rust-sh-inline"
 keywords = ["subprocess", "macro", "shell"]
@@ -14,11 +14,11 @@ edition = "2018"
 [dependencies]
 shlex = "0.1.1"
 tempfile = "3.1.0"
-cap-std-ext = { version = "0.26", optional = true}
+cap-std-ext = { version = "1.0", optional = true}
 
 [dev-dependencies]
 anyhow = "1.0"
-cap-tempfile = "0.25"
+cap-tempfile = "1.0.1"
 
 [package.metadata.docs.rs]
 all-features = true
