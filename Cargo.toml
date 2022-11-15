@@ -9,7 +9,7 @@ documentation = "http://docs.rs/sh-inline"
 homepage = "http://github.com/cgwalters/rust-sh-inline"
 keywords = ["subprocess", "macro", "shell"]
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 shlex = "0.1.1"
