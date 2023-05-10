@@ -1,4 +1,9 @@
-# sh-inline
+# This project is deprecated
+
+This crate is considered deprecated!  Please use [xshell](https://crates.io/crates/xshell) instead.
+
+
+## Original README contents
 
 This was forked from https://github.com/tcr/commandspec - there
 were various unreviewed PRs (e.g. https://github.com/tcr/commandspec/pull/10)

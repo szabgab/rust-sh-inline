@@ -1,3 +1,7 @@
+//! # This crate is deprecated
+//!
+//! This crate is considered deprecated!  Please use [xshell](https://crates.io/crates/xshell) instead.
+//!
 //! # Macros to run bash scripts inline in Rust
 //!
 //! In many cases it's convenient to run child processes,
